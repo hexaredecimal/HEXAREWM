@@ -11,7 +11,5 @@ $ git clone git@github.com:hexaredecimal/HEXAREWM.git
 $ cd HEXAREWM
 $ cargo build --release
 ```
-```
-```
 
 
