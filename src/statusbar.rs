@@ -82,7 +82,7 @@ impl WmStatusBar {
             ).unwrap();
             (WmColors::orange(), format!("Warning: {percent}"))
         } else {
-            (WmColors::green(), format!("{percent}"))
+            (WmColors::white(), format!("{percent}"))
         };
 
         // notify-send 'Hello world!' 'This is an example notification.' --icon=dialog-information
