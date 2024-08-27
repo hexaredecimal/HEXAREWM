@@ -13,7 +13,7 @@ pub struct WmStatusBar;
 
 impl WmStatusBar {
     pub fn status_bar<X: XConn>(
-        wm: &WmConfig,
+        wm: &mut WmConfig,
         highlight: impl Into<Color>,
         empty_ws: impl Into<Color>,
         position: Position,
@@ -49,7 +49,7 @@ impl WmStatusBar {
                 )),
                 Box::new(Wedge::start(WmColors::white(), WmColors::black())),
                 //Box::new(battery_summary("BAT: ", wm.text_style)),
-                Box::new(Self::battery(wm.text_style)),
+                Box::new(Self::battery(wm)),
                 Box::new(wifi_network(wm.text_style)),
                 Box::new(amixer_volume("Master", wm.text_style)),
                 Box::new(current_date_and_time(wm.text_style)),
@@ -60,32 +60,35 @@ impl WmStatusBar {
         .unwrap()
     }
 
-    pub fn battery(style: TextStyle) -> RefreshText {
+    pub fn battery(wm: &mut WmConfig) -> RefreshText {
         let percent = spawn_for_output_with_args("cat", &["/sys/class/power_supply/BAT0/capacity"])
             .unwrap_or_default();
         let percent = percent.clone();
         let trim = percent.trim();
-        let level = trim.parse::<i32>().unwrap_or_default();
+        wm.battery = trim.parse::<i32>().unwrap_or_default();
 
-        let mut battery_style = style.clone();
+        let mut battery_style = wm.text_style.clone();
         // TODO: Set this value from the config
         // TODO: Trigger the noticications only once
         // Move the batter_level info to the wm, then mutate it and run once
-        let (fg, text) = if level < 20 {
-            spawn(
-                "notify-send --urgency=critical -t 5000 'Low Battery Level' --icon=dialog-information",
-            ).unwrap();
+        let (fg, text) = if wm.battery < 20 {
+            if wm.notify_count == 0 {
+                spawn(
+                    "notify-send --urgency=critical -t 5000 'Low Battery Level' --icon=dialog-information",
+                ).unwrap();
+                wm.notify_count += 1;
+            }
             (WmColors::red(), format!("Danger: {percent}"))
-        } else if level <= 50 {
-            spawn(
+        } else if wm.battery <= 50 {
+            if wm.notify_count == 0 {
+                spawn(
                 "notify-send --urgency=critical -t 5000 'Battery Level Warning' --icon=dialog-information",
-            ).unwrap();
+                ).unwrap();
+            }
             (WmColors::orange(), format!("Warning: {percent}"))
         } else {
             (WmColors::white(), format!("{percent}"))
         };
-
-        // notify-send 'Hello world!' 'This is an example notification.' --icon=dialog-information
         battery_style.fg = fg.into();
         RefreshText::new(battery_style, move || text.clone())
     }
