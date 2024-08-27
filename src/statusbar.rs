@@ -48,11 +48,11 @@ impl WmStatusBar {
                     true,
                 )),
                 Box::new(Wedge::start(WmColors::white(), WmColors::black())),
-                Box::new(battery_summary("BAT: ", wm.text_style)),
+                //Box::new(battery_summary("BAT: ", wm.text_style)),
+                Box::new(Self::battery(wm.text_style)),
                 Box::new(wifi_network(wm.text_style)),
                 Box::new(amixer_volume("Master", wm.text_style)),
                 Box::new(current_date_and_time(wm.text_style)),
-                Box::new(Self::user_text(wm.text_style)),
                 Box::new(space),
                 Box::new(Wedge::start(WmColors::white(), WmColors::black())),
             ],
@@ -60,12 +60,24 @@ impl WmStatusBar {
         .unwrap()
     }
 
-    pub fn user_text(style: TextStyle) -> RefreshText {
-        RefreshText::new(style, || {
-            spawn_for_output_with_args("uname", &["-m -o"])
-                .unwrap_or_default()
-                .trim()
-                .to_string()
-        })
+    pub fn battery(style: TextStyle) -> RefreshText {
+        let percent = spawn_for_output_with_args("cat", &["/sys/class/power_supply/BAT0/capacity"])
+            .unwrap_or_default();
+        let percent = percent.clone();
+        let trim = percent.trim();
+        let level = trim.parse::<i32>().unwrap_or_default();
+
+        let mut battery_style = style.clone();
+        // TODO: Set this value from the config
+        let (fg, text) = if level < 20 {
+            (WmColors::red(), format!("Danger: {percent}"))
+        } else if level <= 50 {
+            (WmColors::orange(), format!("Warning: {percent}"))
+        } else {
+            (WmColors::green(), format!("{percent}"))
+        };
+
+        battery_style.fg = fg.into();
+        RefreshText::new(battery_style, move || text.clone())
     }
 }
