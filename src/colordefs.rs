@@ -16,4 +16,16 @@ impl WmColors {
     pub fn blue() -> u32 {
         0x458588ff
     }
+
+    pub fn red() -> u32 {
+        0xee1111ff
+    }
+
+    pub fn orange() -> u32 {
+        0xcc3300ff
+    }
+
+    pub fn green() -> u32 {
+        0x993300
+    }
 }
