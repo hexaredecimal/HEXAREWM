@@ -18,7 +18,6 @@ impl WmStatusBar {
         let highlight = highlight.into();
         let style = wm.text_style;
         let custom_text = Text::new("HEXAREWM", style, false, true);
-        let right_pad = Text::new("", style, true, true);
 
         StatusBar::try_new(
             position,
@@ -27,6 +26,7 @@ impl WmStatusBar {
             wm.font,
             wm.point_size,
             vec![
+                Box::new(custom_text),
                 Box::new(Workspaces::new(style, highlight, empty_ws)),
                 Box::new(CurrentLayout::new(style)),
                 Box::new(ActiveWindowName::new(
@@ -39,8 +39,6 @@ impl WmStatusBar {
                     true,
                     false,
                 )),
-                Box::new(custom_text),
-                Box::new(right_pad),
                 /*Box::new(RootWindowName::new(
                     TextStyle {
                         padding: (4, 2),
