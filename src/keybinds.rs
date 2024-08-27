@@ -5,6 +5,7 @@ use penrose::{
     },
     core::bindings::KeyEventHandler,
     map,
+    pure::geometry::Rect,
     x11rb::RustConn,
 };
 use std::collections::HashMap;
@@ -24,18 +25,38 @@ pub fn raw_key_bindings() -> HashMap<String, Box<dyn KeyEventHandler<RustConn>>>
         "M-bracketleft" => modify_with(|cs| cs.previous_screen()),
         "M-n" => modify_with(|cs| cs.next_layout()),
         "M-p" => modify_with(|cs| cs.previous_layout()),
+        "M-s" => modify_with(|cs| {
+            // TODO: Load these from the config
+            let client = cs.current_client().unwrap();
+            let screen = cs.current_screen();
+            let screen_rect = screen.geometry();
+            let half_width = screen_rect.w / 2;
+            let half_height = screen_rect.h / 2;
+            let x = screen_rect.w * 20 / 100;
+            let y = screen_rect.w * 10 / 100;
+            cs.float(client.clone(), Rect {x, y, w: half_width, h: half_height}).unwrap();
+        }),
+
+        "M-S-s" => modify_with(|cs|{
+            let client = cs.current_client().unwrap();
+            let mut cs_ref = cs.clone();
+            cs_ref.sink(client);
+        }),
+
+        "M-g" => modify_with(|cs| cs.set_layout_by_name("Grid")),
+        "M-f" => modify_with(|cs| cs.set_layout_by_name("Mono")),
         "M-S-Up" => send_layout_message(|| IncMain(1)),
         "M-S-Down" => send_layout_message(|| IncMain(-1)),
         "M-S-Right" => send_layout_message(|| ExpandMain),
         "M-S-Left" => send_layout_message(|| ShrinkMain),
         "M-d" => spawn("dmenu_run"),
         "M-m" => spawn(ROFI),
-        "M-S-s" => log_current_state(),
+        "M-S-z" => log_current_state(),
         "M-Return" => spawn("alacritty"),
         "M-S-e" => exit(),
     };
 
-    for tag in &["1", "2", "3", "4", "5", "6", "7", "8", "9"] {
+    for tag in ["1", "2", "3", "4", "5", "6", "7", "8", "9"] {
         raw_bindings.extend([
             (
                 format!("M-{tag}"),
