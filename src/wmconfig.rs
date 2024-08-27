@@ -11,6 +11,8 @@ pub struct WmConfig<'a> {
     pub point_size: u8,
     pub font: &'a str,
     pub text_style: TextStyle,
+    pub battery: i32,
+    pub notify_count: i32,
 }
 
 impl<'a> Default for WmConfig<'a> {
@@ -30,6 +32,8 @@ impl<'a> Default for WmConfig<'a> {
             point_size: 8,
             font: "ProFontIIx Nerd Font",
             text_style: style,
+            battery: 0,
+            notify_count: 0,
         }
     }
 }
