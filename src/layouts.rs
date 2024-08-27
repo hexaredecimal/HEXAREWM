@@ -18,9 +18,11 @@ pub struct WmLayout;
 impl WmLayout {
     pub fn layouts() -> LayoutStack {
         stack!(
+            MainAndStack::boxed_default(),
             MainAndStack::side(MAX_MAIN, RATIO, RATIO_STEP),
             MainAndStack::side_mirrored(MAX_MAIN, RATIO, RATIO_STEP),
             MainAndStack::bottom(MAX_MAIN, RATIO, RATIO_STEP),
+            MainAndStack::top(MAX_MAIN, RATIO, RATIO_STEP),
             Monocle::boxed()
         )
         .map(|layout| ReserveTop::wrap(Gaps::wrap(layout, OUTER_PX, INNER_PX), BAR_HEIGHT_PX))
