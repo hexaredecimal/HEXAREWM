@@ -1,7 +1,7 @@
 use penrose::{
     builtin::layout::{
         transformers::{Gaps, ReserveTop},
-        MainAndStack, Monocle,
+        CenteredMain, Grid, MainAndStack, Monocle,
     },
     core::layout::LayoutStack,
     stack,
@@ -19,6 +19,9 @@ impl WmLayout {
     pub fn layouts() -> LayoutStack {
         stack!(
             MainAndStack::boxed_default(),
+            Grid::boxed(),
+            CenteredMain::vertical(MAX_MAIN, RATIO, RATIO_STEP),
+            CenteredMain::horizontal(MAX_MAIN, RATIO, RATIO_STEP),
             MainAndStack::side(MAX_MAIN, RATIO, RATIO_STEP),
             MainAndStack::side_mirrored(MAX_MAIN, RATIO, RATIO_STEP),
             MainAndStack::bottom(MAX_MAIN, RATIO, RATIO_STEP),
