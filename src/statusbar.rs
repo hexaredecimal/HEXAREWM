@@ -1,4 +1,4 @@
-use penrose::util::spawn_for_output_with_args;
+use penrose::util::{spawn, spawn_for_output_with_args};
 use penrose::{x::XConn, Color};
 use penrose_ui::bar::widgets::RefreshText;
 use penrose_ui::bar::widgets::*;
@@ -69,14 +69,23 @@ impl WmStatusBar {
 
         let mut battery_style = style.clone();
         // TODO: Set this value from the config
+        // TODO: Trigger the noticications only once
+        // Move the batter_level info to the wm, then mutate it and run once
         let (fg, text) = if level < 20 {
+            spawn(
+                "notify-send --urgency=critical -t 5000 'Low Battery Level' --icon=dialog-information",
+            ).unwrap();
             (WmColors::red(), format!("Danger: {percent}"))
         } else if level <= 50 {
+            spawn(
+                "notify-send --urgency=critical -t 5000 'Battery Level Warning' --icon=dialog-information",
+            ).unwrap();
             (WmColors::orange(), format!("Warning: {percent}"))
         } else {
             (WmColors::green(), format!("{percent}"))
         };
 
+        // notify-send 'Hello world!' 'This is an example notification.' --icon=dialog-information
         battery_style.fg = fg.into();
         RefreshText::new(battery_style, move || text.clone())
     }
