@@ -14,6 +14,7 @@ use std::collections::HashMap;
 fn main() -> Result<()> {
     let config = add_ewmh_hooks(Config {
         default_layouts: WmLayout::layouts(),
+        focused_border: WmColors::white().into(),
         ..Config::default()
     });
 
