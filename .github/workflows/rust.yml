@@ -16,7 +16,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install xmllint
-    - run: sudo apt install libxft-dev libx11-dev xserver-xorg-dev xorg-dev
+      run: sudo apt install libxft-dev libx11-dev xserver-xorg-dev xorg-dev
     - name: release
       run: cargo build --release
     - name: Run tests
