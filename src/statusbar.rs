@@ -1,4 +1,3 @@
-use penrose::util::{spawn, spawn_for_output_with_args};
 use penrose::{x::XConn, Color};
 use penrose_ui::bar::widgets::RefreshText;
 use penrose_ui::bar::widgets::*;
@@ -8,7 +7,7 @@ use penrose_ui::core::TextStyle;
 use crate::colordefs::WmColors;
 use crate::wedge::Wedge;
 use crate::wmconfig::WmConfig;
-
+use std::fs;
 pub struct WmStatusBar;
 
 impl WmStatusBar {
@@ -61,35 +60,54 @@ impl WmStatusBar {
     }
 
     pub fn battery(wm: &mut WmConfig) -> RefreshText {
-        let percent = spawn_for_output_with_args("cat", &["/sys/class/power_supply/BAT0/capacity"])
-            .unwrap_or_default();
-        let percent = percent.clone();
-        let trim = percent.trim();
-        wm.battery = trim.parse::<i32>().unwrap_or_default();
-
-        let mut battery_style = wm.text_style.clone();
+        let mut battery_style = wm.text_style;
         // TODO: Set this value from the config
         // TODO: Trigger the noticications only once
         // Move the batter_level info to the wm, then mutate it and run once
-        let (fg, text) = if wm.battery < 20 {
-            if wm.notify_count == 0 {
-                spawn(
-                    "notify-send --urgency=critical -t 5000 'Low Battery Level' --icon=dialog-information",
-                ).unwrap();
-                wm.notify_count += 1;
-            }
-            (WmColors::red(), format!("Danger: {percent}"))
-        } else if wm.battery <= 50 {
-            if wm.notify_count == 0 {
-                spawn(
-                "notify-send --urgency=critical -t 5000 'Battery Level Warning' --icon=dialog-information",
-                ).unwrap();
-            }
-            (WmColors::orange(), format!("Warning: {percent}"))
-        } else {
-            (WmColors::white(), format!("{percent}"))
-        };
-        battery_style.fg = fg.into();
+        let (status, color) = Self::battery_text(wm).unwrap();
+        let text = status.unwrap_or(0.to_string());
+
+        battery_style.fg = color.into();
         RefreshText::new(battery_style, move || text.clone())
+    }
+
+    fn battery_text(wm: &mut WmConfig) -> Option<(Option<String>, u32)> {
+        let status = Self::read_sys_file("BAT0", "status")?;
+        let energy_now: u32 = Self::read_sys_file("BAT0", "energy_now")?.parse().ok()?;
+        let energy_full: u32 = Self::read_sys_file("BAT0", "energy_full")?.parse().ok()?;
+
+        let charge = energy_now * 100 / energy_full;
+        wm.battery = charge as i32;
+
+        let icon = if status == "Charging" {
+            ""
+        } else if charge >= 90 || status == "Full" {
+            ""
+        } else if charge >= 70 {
+            ""
+        } else if charge >= 50 {
+            ""
+        } else if charge >= 20 {
+            ""
+        } else {
+            ""
+        };
+
+        let color = if charge < 20 {
+            //Critical Level
+            WmColors::red()
+        } else if charge < 50 {
+            WmColors::orange()
+        } else {
+            WmColors::white()
+        };
+
+        Some((Some(format!("{icon} {charge}% - {status}")), color))
+    }
+
+    fn read_sys_file(bat: &str, fname: &str) -> Option<String> {
+        fs::read_to_string(format!("/sys/class/power_supply/{bat}/{fname}"))
+            .ok()
+            .map(|s| s.trim().to_string())
     }
 }
