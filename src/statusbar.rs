@@ -1,3 +1,4 @@
+//use penrose::util::spawn;
 use penrose::{x::XConn, Color};
 use penrose_ui::bar::widgets::RefreshText;
 use penrose_ui::bar::widgets::*;
@@ -67,6 +68,11 @@ impl WmStatusBar {
         let (status, color) = Self::battery_text(wm).unwrap();
         let text = status.unwrap_or(0.to_string());
 
+        // TODO: Show a notification when the Battery level is 50 && 20
+        // if wm.battery == 50 {
+        //    spawn("notify-send --urgency=critical -t 5000 'Low Battery Level' --icon=dialog-information").unwrap();
+        //}
+
         battery_style.fg = color.into();
         RefreshText::new(battery_style, move || text.clone())
     }
@@ -102,7 +108,7 @@ impl WmStatusBar {
             WmColors::white()
         };
 
-        Some((Some(format!("{icon} {charge}% - {status}")), color))
+        Some((Some(format!(" {icon} {charge}% - {status} ")), color))
     }
 
     fn read_sys_file(bat: &str, fname: &str) -> Option<String> {
