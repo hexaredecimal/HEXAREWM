@@ -34,7 +34,7 @@ pub fn raw_key_bindings() -> HashMap<String, Box<dyn KeyEventHandler<RustConn>>>
             let half_height = screen_rect.h / 2;
             let x = screen_rect.w * 20 / 100;
             let y = screen_rect.w * 10 / 100;
-            cs.float(client.clone(), Rect {x, y, w: half_width, h: half_height}).unwrap();
+            cs.float(*client, Rect {x, y, w: half_width, h: half_height}).unwrap();
         }),
 
         "M-S-s" => modify_with(|cs|{
