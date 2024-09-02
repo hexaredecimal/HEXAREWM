@@ -1,3 +1,5 @@
+use std::u8;
+
 use penrose_ui::core::TextStyle;
 
 use crate::colordefs::WmColors;
@@ -12,7 +14,8 @@ pub struct WmConfig<'a> {
     pub font: &'a str,
     pub text_style: TextStyle,
     pub battery: i32,
-    pub notify_count: i32,
+    pub notify_count: u8,
+    pub flag: i32,
 }
 
 impl<'a> Default for WmConfig<'a> {
@@ -34,6 +37,7 @@ impl<'a> Default for WmConfig<'a> {
             text_style: style,
             battery: 0,
             notify_count: 0,
+            flag: 0
         }
     }
 }
