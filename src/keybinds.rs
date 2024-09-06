@@ -38,9 +38,8 @@ pub fn raw_key_bindings() -> HashMap<String, Box<dyn KeyEventHandler<RustConn>>>
         }),
 
         "M-S-s" => modify_with(|cs|{
-            let client = cs.current_client().unwrap();
-            let mut cs_ref = cs.clone();
-            cs_ref.sink(client);
+            let client = *cs.current_client().unwrap();
+            cs.sink(&client);
         }),
 
         "M-g" => modify_with(|cs| cs.set_layout_by_name("Grid")),
